@@ -3,6 +3,7 @@
 
 \usepackage{amsfonts,amssymb}
 \usepackage{url}
+\usepackage{physics}
 %% \usepackage{hyperref}
 
 \usepackage[T2A]{fontenc}
@@ -57,29 +58,24 @@
   \setbeamerfont{structure}{series=\bfseries} 
 }
 
-\title[BSOI on Multicores with GPUs]{%
-  Structured Orthogonal Inversion of Block $p$-Cyclic Matrices 
-  on Multicores with GPU Accelerators}
-\subject{GPU and Accelerator Computing}
+\title[PageRank and Kempe-McSherry]{%
+  Applying Orthogonal/Power Iterations to Big Graph Mining : PageRank and Kempe-McSherry Algorithms}
+\subject{Big Graph Mining}
 
-
-\author[Z.\,Bai]{
-  Sergiy Gogolenko\inst{1} 
-  \and \alert{Zhaojun Bai}\inst{2}
-  \and Richard Scalettar\inst{2}
+\author[S.\,Gogolenko]{
+  Sergiy Gogolenko %\inst{1} 
 }
 
-\institute[UC Davis]{%
+\institute[DonNTU]{%
   \includegraphics[height=2cm]{./figs/logo/donntu-logo.png}%Donetsk National Technical University
   \hspace*{0.75cm}~%
-  \includegraphics[height=2cm]{./figs/logo/ucdavis-logo.png}%University of California, Davis
+  \includegraphics[height=2cm]{./figs/logo/ucu-logo.png}%University of California, Davis
 }
 %% \titlegraphic{\includegraphics[width=4cm]{./figs/logo/ucdavis-logo.png}}
 
-\date[Euro-Par 2014] {%
-  Euro-Par 2014\\%
-  \footnotesize{Porto, Portugal}\\%
-  \footnotesize{August 25-29}
+\date[Lviv 2016] {%
+  Ukrainian Catholic University, Lviv \\%
+  \footnotesize{2016, May 23}
 }
 
 
@@ -117,20 +113,7 @@
 \begin{frame}{Applications}{Major application areas}
   %% \structure{Major application areas}
   \begin{itemize}
-  \item numerical solving differential equations
-    \begin{itemize}
-    \item two-point BVPs: \\
-      {\footnotesize
-        multiple shooting \\
-        and finite difference schemes
-      }
-    \item various IBVPs: \\
-      {\footnotesize
-        orthogonal spline collocation methods (including elliptic BVPs), \\
-        method of lines,\\
-        and Keller's box scheme
-      }
-    \end{itemize}
+  \item Web ranking 
   \item Markov chain modeling
     \begin{itemize}
     \item periodic transition graphs for queuing networks
@@ -153,16 +136,11 @@
 
 \end{frame}
 
-\begin{frame}{Applications}{Case study: %
-    %% Study thermodynamics, kinetics and magnetic properties with
-    2D and 3D time-dependent determinant QMC}
-  %% \begin{block}{Objective}
-  %%   Study thermodynamics, kinetics and magnetic properties of meterials
-  %% \end{block}
+\begin{frame}{Orthogonal iterations}{Power iterations}
   \begin{block}{Hubbard model}
     \begin{columns}
       \begin{column}{0.35\textwidth}
-        \includegraphics[width=1.\textwidth]{figs/extras/hubbard_model}
+        \includegraphics[width=1.\textwidth]{figs/pdf/WebBowTie}
       \end{column}
       \begin{column}{0.7\textwidth}
         \begin{equation*}
@@ -281,71 +259,6 @@
   \end{block}
 \end{frame}
 
-
-\begin{frame}{Basic algorithms}{Structured orthogonal factorization: Result}
-  \tikzstyle{every picture}+=[remember picture]
-
-  \tikzstyle{matrix node}   = [drop shadow,anchor=base]
-  \tikzstyle{input matrix}  = [draw=red!50!black!50,fill=red!20,matrix node]
-  \tikzstyle{result matrix} = [draw=green!50!black!50,fill=green!20,minimum height=7em,matrix node]
-  \tikzstyle{data arrow}    = [->,line width=1pt,draw=red]
-  \tikzstyle{input arrow}   = [data arrow,draw=red!50!black!50]
-  \tikzstyle{result arrow}  = [data arrow,draw=green!50!black!50]
-
-  \begin{equation*} \label{eq:matr_H}
-    \tikz[baseline]{\node[input matrix] (matrH) {$\displaystyle
-        \begin{bmatrix}
-          A_1 &    &    &  & B_p   \\
-          B_1 & A_2 &    &  &  \\
-          & B_2 & A_3 &  &     \\
-          &        & \ddots & \ddots &         \\
-          &     &          & B_{p-1} & A_p
-        \end{bmatrix}
-        $};}
-  \end{equation*}
-
-  \pause
-
-  \begin{center}
-    \tikz[baseline]{\node%% [ellipse,drop shadow,fill=white,draw]
-      (signQR) {{\tt BSOF} algorithm};}
-  \end{center}
-
-  \begin{equation*} \label{eq:matr_H_decomposition}
-    \tikz[baseline]{\node[result matrix] (matrQ) {$\displaystyle
-        \prod_{k=1}^{p-1}
-        %% \begin{bmatrix}
-        %%   I_{n(k-1)} &  &  &  &  \\
-        %%   &  & Q_{11}^{(k)} & Q_{22}^{(k)} &  \\
-        %%   &  & Q_{21}^{(k)} & Q_{22}^{(k)} &  \\
-        %%   &  &  &  & I_{n(p-k-1)}
-        %% \end{bmatrix}
-        \begin{bmatrix}
-          I_{n(k-1)}  &  &  &  \\
-          &  & Q_{1:2,1:2}^{(k)} &  \\
-          &  &  & I_{n(p-k-1)}
-        \end{bmatrix}
-        $};}
-    \times
-    \tikz[baseline]{\node[result matrix] (matrR) {$\displaystyle
-        \begin{bmatrix}
-          R_{11} & R_{12} &  & R_{1,p} \\
-          & \ddots & \ddots & \vdots \\
-          &        & R_{p-1,p-1} & R_{p-1,p}  \\ 
-          &        &           & R_{p,p}
-        \end{bmatrix}
-        $};}
-  \end{equation*}
-
-  \begin{tikzpicture}[overlay]
-    %% \path[->] (matrH.south west) edge [bend right] (matrQ);
-    %% \path[->] (matrH.south east) edge [bend left] (matrR);
-    \draw[input arrow]  (matrH.south) -- (signQR);
-    \draw[result arrow] (signQR.west) edge [bend right] (matrQ.north);
-    \draw[result arrow] (signQR.east) edge [bend left] (matrR.north);
-  \end{tikzpicture}
-\end{frame}
-
 \begin{frame}{Basic algorithms}{Inversion via block back substitution}
   \begin{block}{{\tt BSTRI\_RV} -- Row Version of the BBS}
     \begin{algorithm}[H]
@@ -368,38 +281,6 @@
   
   \begin{block}{{\tt BSTRI\_CV} -- Column Version of the BBS}
     Similar to {\tt BSTRI\_RV}
-  \end{block}
-\end{frame}
-
-%% \begin{frame}{Basic algorithms}{}
-%% \end{frame}
-
-\begin{frame}{Basic algorithms}{%
-    Applying the orthogonal factors (Householder reflectors) to $R^{-1}$}
-  \begin{block}{{\tt BSOI} -- Update $X$ via applying $Q^{T}$}
-    \begin{algorithm}[H]
-      \KwData{$X$, $\{Q^{(k)} | 1 \leq k < p - 1 \}$, $n$, $p$}
-      \KwResult{$X$}
-      \BlankLine
-
-      \For{$k \in \{p-1, p-2,..., 1 \}$}{
-        $X_{1:p,k:k+1} \gets X_{1:p,k:k+1} Q^{(k)T} $
-        %\label{alg:apply_Qk_in_total}
-      }
-      \BlankLine
-    \end{algorithm}    
-  \end{block}
-
-  \begin{block}{{\tt BSOI\_Qk} -- Applying $Q_k^{T}$}
-    \begin{algorithm}[H]
-      \KwData{$X_{1:p,k:k+1}$, $Q^{(k)}$, $n$, $p$}
-      \KwResult{$X_{1:p,k:k+1}$}
-
-      $W_{1:k+1,k:k+1} \gets X_{1:k+1,k:k+1} Q^{(k)T} $\;
-      % $X_{1:k+1,k:k+1} \gets W$\;
-      $W_{k+2:p,k:k+1} \gets X_{k+2:p,k:k+1} Q_{1:2,2}^{(k)T}$\;
-      $X_{1:p,k:k+1} \gets W$;
-    \end{algorithm}    
   \end{block}
 \end{frame}
 
@@ -440,174 +321,6 @@
   \end{block}
 \end{frame}
 
-\subsection{Parallel ``host-device'' BSOFI}
-
-\begin{frame}{Parallel ``host-device'' BSOFI}{Framework}
-  \resizebox{.75\width}{.75\height}{
-    \input{figs/tex/BSOFI_HostDevice}
-  }
-\end{frame}
-
-\begin{frame}{Parallel ``host-device'' BSOFI}{%
-    Workload distribution and load balancing : \Bsoftri}
-
-  \colorlet{DarkMatrixColor}{green!50!black!50}
-  \colorlet{LightMatrixColor}{green!20}
-  \colorlet{TextMatrixColor}{green!50!black!80}
-  \colorlet{LineAnnotMatrixColor}{green!50!black!80}
-
-  \begin{columns}
-    \begin{column}{0.4\textwidth}
-      \centering
-      {\tt BSTRI\_CV}\\
-      \scalebox{0.75}{\input{figs/tex/ColBSTRI_HostDevice}}
-    \end{column}
-    \begin{column}{0.6\textwidth}
-      \centering
-      {\tt BSTRI\_RV}\\
-      \scalebox{0.75}{\input{figs/tex/RowBSTRI_HostDevice}}
-      % Balancing ($\kappa_R$, $c_i$) is parametrized similarly to {\tt BSTRI\_CV}
-    \end{column}
-  \end{columns}
-
-  \begin{columns}
-    \begin{column}{0.4\textwidth}
-      \[\color{TextMatrixColor}{\fbox{$\displaystyle
-          l_j \approx \frac{1}{1 + \kappa_C} \left(j + c_j \right) 
-          $}}\]
-    \end{column}
-    \begin{column}{0.6\textwidth}
-      \[\color{TextMatrixColor}{\fbox{$\displaystyle
-        l_i \approx \frac{1}{1 + \kappa_R} \left( p-\min\{i,j_F\}+1 + c_i \right) 
-        $}}\]
-    \end{column}
-  \end{columns}
-
-  $\kappa$ -- CPU-GPU performance ration; 
-  $c$ -- close to 1
-  %% \begin{align*}
-  %%   \kappa_C =& \frac{\{T_{\texttt{DGEMM(n,n,n)}}^{\rm gpu},T^{\rm gpu}_{\texttt{GET(n,n)}}\}}{T^{\rm cpu}_{\texttt{DGEMM(n,n,n)}} / (1 + \eta)} 
-  %%   ,
-  %%   c_j = 2 \frac{T^{\rm cpu}_{\texttt{DTRTRI(n)}} + 2 T^{\rm cpu}_{\texttt{DTRMM(n,n)}}}{2 T^{\rm cpu}_{\texttt{DGEMM(n,n,n)}}} - 1 %\sim 0 %> \frac{1}{6}
-  %% \end{align*}
-
-\end{frame}
-
-\begin{frame}{Parallel ``host-device'' BSOFI}{%
-    Workload distribution and load balancing : \Bsoi ({\tt BSOI\_Qk})}
-  
-  \colorlet{DarkMatrixColor}{blue!50!black!50}
-  \colorlet{LightMatrixColor}{blue!20}
-  \colorlet{TextMatrixColor}{blue!50!black!80}
-  \colorlet{LineAnnotMatrixColor}{blue!50!black!80}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \centering
-      \Bsoi
-      \begin{columns}
-        \begin{column}{0.5\textwidth}
-          \centering
-          $l_k + k \leq p$\\
-          \scalebox{0.75}{\input{figs/tex/BSOI_Option1_HostDevice}}
-        \end{column}
-        \begin{column}{0.5\textwidth}
-          \centering
-          $l_k + k > p$\\
-          \scalebox{0.75}{\input{figs/tex/BSOI_Option2_HostDevice}}
-        \end{column}
-      \end{columns}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      %% \centering
-      \indent
-      \[\color{TextMatrixColor}{\fbox{$\displaystyle
-      l_k \approx 
-      \begin{cases}
-        \displaystyle
-        \frac{1}{1 + \kappa_Q} \left( p+k + 2 +c'_k - c''_k\right)\\ 
-        \begin{split}
-          \frac{1}{1 + \kappa_Q} &\left(p  + \frac{\kappa_Q}{2}(p-k) + 
-          \right. \\ &+ \left.
-          1 + \frac{c'_k}{2} - c''_k\right)
-        \end{split}
-      \end{cases}
-      $}}\]
-      \begin{align*}
-        \kappa_Q  =& \frac{\{T_{\texttt{DGEMM(2*n,n,n)}}^{\rm gpu},T^{\rm gpu}_{\texttt{GET(n,n)}}\}}{T^{\rm cpu}_{\texttt{DGEMM(2*n,n,n)}}} \\
-        c'_k  =& \frac{T^{\rm cpu}_\texttt{DORGQR(2*n,2*n,n)}}{T^{\rm cpu}_\texttt{DGEMM(2*n,n,n)}} - 2 > \frac{1}{3} \\
-        c''_k =& {\frac{T^{\rm gpu}_{\texttt{SET(n,n)}}}{T_{\texttt{DGEMM(2*n,n,n)}}^{\rm cpu}}}
-      \end{align*}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Parallel ``host-device'' BSOFI}{%
-    Workload distribution and load balancing : Switching between steps in \Bsoftri}
-
-  \begin{block}{Switching parameter to step 2 of \Bsoftri}
-    $  
-    T(\text{inversion of $j_F$ columns})
-    \le T(\text{$j_F-l_F$ factorization steps})
-    $
-  \[\color{red!50!black!80}{\fbox{$\displaystyle
-      l_{F} \ge
-      \frac{1}{2} - c_{j} + \frac{\eta}{5 \beta_F } 
-      \left( c_{j}^{2} + c_{j}  - \frac{1}{4} \right) + 
-      \frac{5 \beta_F }{2 \delta \eta}
-      $}}\]
-  \begin{itemize}
-  \item $\beta_F$: kernels performance ratio (close to 1 by construction)
-  \item $\eta$: ratio between the \# of cores 
-    %% involved 
-    in factorization and inversion
-  \end{itemize}
-  \end{block}
-  %% \begin{equation*}
-  %%   \beta_F  = \frac{T^{\rm cpu}_{\texttt{DGEQRF(2*n,n)}} + T^{\rm cpu}_{\texttt{DORMQR('R','N',2*n,n,n)}}}{5 T^{\rm cpu}_{\texttt{DGEMM(n,n,n)}}}
-  %% \end{equation*}
-
-  \begin{columns}
-    \begin{column}{0.5\textwidth}
-      \centering
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \centering
-    \end{column}
-  \end{columns}
-\end{frame}
-
-\begin{frame}{Parallel ``host-device'' BSOFI}{%
-    Workload distribution and load balancing : Summary of performance modelling}
-  \begin{block}{Performance modelling}
-    \begin{center}
-      \rowcolors[]{1}{blue!20}{blue!10} %\rowcolors{1}{Blue!20}{Blue!5}
-      \begin{tabular}{l|c}
-        \toprule
-        Metric & \Bsoftri\\
-        \hline
-        \# flops GPU 
-        & $\frac{n^{3} p}{1 + \kappa_{R}} \left( 
-        \theta^{2} \beta_F \left( 1 + \frac{\delta - 1 }{\delta \eta} \left( 1 + \frac{1}{\kappa_{C}} \right) \right) + {p + 1 + 2 c_{i}} \right)$\\
-        CPU$\rightleftharpoons$GPU
-        & $\frac{n^{2} p}{1 + \kappa_{R}} \frac{1}{2}\left(\frac{\theta^{2} \beta_F }{\delta} + {p + 5 + 2 \kappa_R + 2 c_{i}}\right)$\\
-        CPU$\rightleftharpoons$GPU
-        & $2 p + 2(2 - \delta) \theta {\sqrt{\frac{\beta_{F} }{ \delta \eta} \left(1 + \frac{1}{\kappa_{C}}\right) \left(p - 2\right) }} + 2 \delta - 12$\\
-        \hline\hline
-        Metric & \Bsoi  \\
-        \hline
-        \# flops GPU 
-        & $\frac{2 n^{3} p}{1 + \kappa_{Q}} \left( 3 p + 1 + 2 c'_k - 4 c''_k\right)$\\
-        CPU$\rightleftharpoons$GPU
-        & $\frac{n^{2} p^{2}}{1 + \kappa_{Q}} \frac{1}{2} \frac{3 \kappa_{Q} + 4}{ \kappa_{Q} + 2}$ \\
-        CPU$\rightleftharpoons$GPU
-        & $2 p-2$ \\
-
-        \bottomrule
-      \end{tabular}
-    \end{center}
-  \end{block}
-\end{frame}
 
 \section{Experimental results and analysis}
 
@@ -670,8 +383,8 @@
       CPU/GPU performance ratio parameters 
       ($\kappa_R$, $\kappa_C$, and $\kappa_Q$)
 
-      \visible<2->{
-      \includegraphics[width=\textwidth]{./figs/pdf/kappa_params}}
+      % \visible<2->{
+      % \includegraphics[width=\textwidth]{./figs/pdf/kappa_params}}
       
       %% Approximation approach
       \begin{itemize}
@@ -685,8 +398,8 @@
       \centering
       Switching ($l_F$) and  correction parameters 
       ($c_i$, $c_j$, $c'_k$, and $c''_k$)
-      \visible<2->{
-        \includegraphics[width=\textwidth]{./figs/pdf/lF_param_approx}}
+      % \visible<2->{
+      %   \includegraphics[width=\textwidth]{./figs/pdf/lF_param_approx}}
 
       %% Approximation approach
       \begin{itemize}
@@ -698,24 +411,6 @@
     \end{column}
 
   \end{columns}
-\end{frame}
-
-\begin{frame}{Experimental results}{Benchmarking results}
-\begin{columns}[t]%[thb]
-  \begin{column}[t]{0.5\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{./figs/pdf/BSOFI_performance_scale}
-
-    {Performance of the CPU, GPU and hybrid BSOFI codes}
-  \end{column}
-  \begin{column}[t]{0.5\textwidth}
-    \centering
-    \includegraphics[width=\textwidth]{./figs/pdf/BSOFI_performance_sustainability}
-
-    Performance of the hybrid BSOFI codes
-  \end{column}
-\end{columns}
-
 \end{frame}
 
 %% \frame[plain]{\centering
