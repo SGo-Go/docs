@@ -20,6 +20,8 @@
 
 \usepackage{ulem}
 
+\newcommand{\PageRank}{\texttt{PageRank}\xspace}
+
 \newcommand{\Bsof}{\texttt{BSOF}\xspace}
 \newcommand{\Bstri}{\texttt{BSTRI}\xspace}
 \newcommand{\Bsoftri}{\texttt{BSOFTRI}\xspace}
@@ -59,7 +61,7 @@
 }
 
 \title[PageRank and Kempe-McSherry]{%
-  Applying Orthogonal/Power Iterations to Big Graph Mining : PageRank and Kempe-McSherry Algorithms}
+  Applying Orthogonal/Power Iterations to Big Graph Mining : \PageRank and Kempe-McSherry Algorithms}
 \subject{Big Graph Mining}
 
 \author[S.\,Gogolenko]{
@@ -89,96 +91,216 @@
   \tableofcontents
 \end{frame}
 
-\section{Background \& motivation}
+\section{\PageRank}
 
-%% \subsection{Problem formulation}
+% %% \subsection{Problem formulation}
 
-\begin{frame}{Problem formulation}
-  \begin{definition}[$p$-cyclic matrix]
-    \begin{equation} \label{eq:matr_A}
-      H =
-      \begin{bmatrix}
-        A_1 &    &    &  & B_p   \\
-        B_1 & A_2 &    &  &  \\
-        & B_2 & A_3 &  &     \\
-        &        & \ddots & \ddots &         \\
-        &     &          & B_{p-1} & A_p
-      \end{bmatrix}
-      ,
-    \end{equation}
-    where $A_i$ and $B_i$ are non-zero blocks
-  \end{definition}
+% \begin{frame}{Problem formulation}
+%   \begin{definition}[$p$-cyclic matrix]
+%     \begin{equation} \label{eq:matr_A}
+%       H =
+%       \begin{bmatrix}
+%         A_1 &    &    &  & B_p   \\
+%         B_1 & A_2 &    &  &  \\
+%         & B_2 & A_3 &  &     \\
+%         &        & \ddots & \ddots &         \\
+%         &     &          & B_{p-1} & A_p
+%       \end{bmatrix}
+%       ,
+%     \end{equation}
+%     where $A_i$ and $B_i$ are non-zero blocks
+%   \end{definition}
+% \end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank}{What made them heros of top magazine cover?}
+  \begin{columns}
+    \column[T]{0.5\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/extras/brin-page-newsweek1}
+
+    .
+    \column[T]{0.5\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/extras/brin-page-time}
+  \end{columns}
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Measure of importance}
+  \begin{columns}
+    \begin{column}{0.3\textwidth}
+      \includegraphics[width=1.\textwidth]{figs/extras/penguin-no-spam}%{figs/extras/google-webspam}
+    \end{column}
+    \begin{column}{0.7\textwidth}
 
-\begin{frame}{Applications}{Major application areas}
-  %% \structure{Major application areas}
-  \begin{itemize}
-  \item Web ranking 
-  \item Markov chain modeling
-    \begin{itemize}
-    \item periodic transition graphs for queuing networks
-    \item stochastic Petri nets
-    \end{itemize}
-  \item quantum Monte Carlo (QMC) simulations 
-    %of Hubbard models for strongly correlated materials
-  \end{itemize}
+      % \structure{SP}iced h\structure{AM}
 
+      \begin{exampleblock}{}%{Key}
+        % While Google was not the first search engine, 
+        % it was the first able to defeat the spammers who had made search almost useless.
+
+        The \structure{importance} of a Web page is an inherently subjective matter...%, which depends on the readers interests, knowledge and attitudes. 
+        But there is still much that can be said \alert{objectively} about the \structure{relative importance} of Web pages.
+
+        \href{http://ilpubs.stanford.edu:8090/422/}{{\tiny
+            \underline{Page, L.}; \underline{Brin, S.}; Motwani, R.; Winograd, T. (\underline{1999}) 
+            \textit{The \textbf{PageRank} Citation Ranking: Bringing Order to the Web}. Tech.rep. \underline{Stanford} InfoLab.}}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
   \pause
-  \begin{exampleblock}{%% Inevitable
-      Key numerical kernels}
+  \begin{centering}
+    \structure{\fbox{Probability of visiting page by idealized random Web surfer}}
+  \end{centering}
+  \begin{block}{Why this trick works?}
+    \begin{itemize}
+    \item users of the Web ``vote with their feet'' %tend to place links to pages they think are good or useful
+    \item users are more likely to visit useful pages
+    \end{itemize}
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Random surfing as Markov process}
+  % probability distribution for the location of a random surfer
+
+  % \begin{block}{Hubbard model}
+  \begin{columns}
+    \column{0.2\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/extras/web-surfer}
+    \column{0.5\textwidth}
+      \includegraphics<1>[width=1.\textwidth]{figs/tex/graph}
+      \includegraphics<2>[width=1.\textwidth]{figs/tex/graph_probability0}
+      \includegraphics<3>[width=1.\textwidth]{figs/tex/graph_probability1}
+      \includegraphics<4>[width=1.\textwidth]{figs/tex/graph_probability2}
+    \column{0.4\textwidth}
+    
+      \begin{exampleblock}{Probabilities}
+        \begin{enumerate}
+        \item<2-> $p = (1,0,0,0,0,0)$
+        \item<3-> $p = (0,0,0,0,0,1)$
+        \item<4-> $p = (0,\frac{2}{5},\frac{2}{5},\frac{1}{5},0)$
+        \end{enumerate}
+      \end{exampleblock}
+  \end{columns}
+  % \end{block}
+
+   \pause
+   \begin{block}{Restrictions}
+     \begin{itemize}
+     \item \structure{strongly connected} graph
+     \item \structure{no dead-ends}
+     \end{itemize}
+   \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Transition matrix of the Web}
+  % probability distribution for the location of a random surfer
+
+  % \begin{block}{Hubbard model}
+  \begin{columns}
+    \begin{column}{0.45\textwidth}
+      % \includegraphics[width=1.\textwidth]{figs/extras/term-spam-google}
+    \end{column}
+    \begin{column}{0.7\textwidth}
+
+      \begin{exampleblock}{Restrictions}
+        \begin{itemize}
+        \item \structure{strongly connected} graph
+        \item \structure{no dead-ends}
+        \end{itemize}
+      \end{exampleblock}
+    \end{column}
+  \end{columns}
+  % \end{block}
+
+   \pause
+   \begin{block}{Restrictions}
+     \begin{itemize}
+     \item \structure{strongly connected} graph
+     \item \structure{no dead-ends}
+     \end{itemize}
+   \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Structure of the Web}
+  \begin{columns}
+    \column{0.6\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/pdf/BowTieExtract}%{WebBowTie}
+
+    \column{0.4\textwidth}
+    \href{http://www.nature.com/nature/journal/v405/n6783/pdf/405113a0.pdf}{\tiny \copyright \underline{\textit{Nature}} 405, 113 (11 May \underline{2000})}
+
+    \begin{block}{Web as ``bowtie''}
       \begin{itemize}
-      \item solving linear systems
-      \item explicite \alert{inversion}
+      \item in-component
+      \item out-component
+      \item tendrils
+        \begin{itemize}
+        \item tubes
+        \item isolated components
+        \end{itemize}
       \end{itemize}
-      %% \begin{center}
-      %% \end{center}
+    \end{block}
+
+    \pause
+    \begin{block}{\alert{Problems}}
+      \begin{itemize}
+      \item \structure{dead-ends} %: no links out
+      \item \structure{spider traps} %: have outlinks, but never link to any other pages
+      \end{itemize}
+    \end{block}
+  \end{columns}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Avoiding dead ends by dropping}
+  % A matrix whose column sums are at most 1 is called \structure{substochastic}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/pdf/WebBowTie}
+
+    \column{0.5\textwidth}
+
+    \begin{block}{Algorithm}
+      \begin{enumerate}
+      \item<1,2> \structure{Backward graph reduction}: remove dead ends iteratively
+      \item<1,3> \structure{Compute {\PageRank}s} of reduced graph
+      \item<1,4> \structure{Forward \PageRank computing}
+      \end{enumerate}
+    \end{block}
+  \end{columns}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Teleporting}
+  % A matrix whose column sums are at most 1 is called \structure{substochastic}
+  \begin{columns}
+    \column{0.5\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/tex/graph_dead_end}
+
+    \column{0.5\textwidth}
+
+    \begin{block}{Algorithm}
+      \begin{enumerate}
+      \item<1,2> \structure{Backward graph reduction}: remove dead ends iteratively
+      \item<1,3> \structure{Compute {\PageRank}s} of reduced graph
+      \item<1,4> \structure{Forward \PageRank computing}
+      \end{enumerate}
+    \end{block}
+  \end{columns}
+
+  \begin{equation*}
+  \end{equation*}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Applications}{Major application areas}
+  \begin{exampleblock}{Key}
+    Yet the war between those who want to make the Web useful and those
+    who would exploit it for their own purposes is never over.
   \end{exampleblock}
 
-\end{frame}
-
-\begin{frame}{Orthogonal iterations}{Power iterations}
-  \begin{block}{Hubbard model}
-    \begin{columns}
-      \begin{column}{0.35\textwidth}
-        \includegraphics[width=1.\textwidth]{figs/pdf/WebBowTie}
-      \end{column}
-      \begin{column}{0.7\textwidth}
-        \begin{equation*}
-          \footnotesize
-          \begin{split}
-            {\cal H} =& 
-            \overbrace{
-              -t \sum_{\langle i,j \rangle,\sigma} 
-              (c^{\dagger}_{i,\sigma} c^{}_{j,\sigma}+ c^{\dagger}_{j,\sigma}c^{}_{i,\sigma})%
-            }^{\text{$J$ -- kinetic energy (tunneling)}} - 
-            \\ -&
-            \underbrace{
-              \underbrace{
-                \mu \sum_{i=1}^{N} (n_{i\uparrow} + n_{i\downarrow})%
-              }_{\text{chemical energy}} +
-              \underbrace{
-                U \sum_{i=1}^{N} (n_{i\uparrow} -\frac{1}{2}) (n_{i\downarrow}-\frac{1}{2})%
-              }_{\text{potential energy}}
-            }_{\text{$U$ -- on-site interaction}},
-          \end{split}
-        \end{equation*}
-      \end{column}
-    \end{columns}
-  \end{block}
   \pause
-  \begin{enumerate}
-  \item 
-    \alert{Spatial and temporal discretization} of partition function $\cal Z$
-    for interacting ``Hubbard particles''
-    %% Trotter-Suzuki decomposition
-    %% Hubbard-Stratonovich (HS) transformation
-    results in \alert{$p$-cyclic matrices} with identity diagonal blocks 
-    \alert{$\cal M$} (Hubbard matrices)
-  \item 
-    \alert{inverse of $\cal M$} (Green’s function)
-    must be computed \alert{at each iteration} of DQMC
-    and is essential to express physical observables
-  \end{enumerate} 
+  Techniques for preventing link spammers (search-engine optimization)
+  \begin{itemize}
+  \item TrustRank
+  \item topic-sensitive \PageRank
+  \end{itemize}
 \end{frame}
 
 \section{Algorithm}
@@ -415,7 +537,6 @@
 
 %% \frame[plain]{\centering
 %%   \Huge Thank you for your attantion!
-
 %%   \includegraphics[height=0.5\textheight]{figs/extras/question.jpg}
 %% }
 
