@@ -148,9 +148,12 @@ GS,pos = getGraph(edges1, edges2, nx.Graph)
 #      'C':(1,1),
 #      'D':(0,1),
 #      'E':(0.5,0.5)}
-A = nx.adjacency_matrix(GS, nodelist=list('ABCDE'))
-#laplacian_matrix()
-A = Matrix(A.astype(int))
-pprint(A)
-
+Lnp = nx.laplacian_matrix(GS, nodelist=list('ABCDE'))
+L = Matrix(Lnp.astype(int))
+print sympy.latex(L)
+from numpy import linalg as LA
+w, v = LA.eig(Lnp)
+x = v[-1]
+print x, x[0]
+#print map(lambda x: round(x*100)/100,v[-1][0])
 #plt.show()

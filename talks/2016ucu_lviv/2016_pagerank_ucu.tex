@@ -649,17 +649,111 @@
 \section{Decentralized OI}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Kempe-McSherry algorithm}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Decentralized OI}{\PushSum protocol}
-  \begin{block}{Convergence of decentralized OI}
-    It converges essentially in
-    \structure{${\cal O}(\tau_{\text{mix}} \log^2 n)$}
-    rounds of communication and computation, 
-    where $\tau_{\text{mix}}$ is the mixing  time  of  a  random  walk  on  the  network. 
-  \end{block}
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% \begin{frame}{Decentralized OI}{\PushSum protocol}
+%   \begin{block}{Convergence of decentralized OI}
+%     It converges essentially in
+%     \structure{${\cal O}(\tau_{\text{mix}} \log^2 n)$}
+%     rounds of communication and computation, 
+%     where $\tau_{\text{mix}}$ is the mixing  time  of  a  random  walk  on  the  network. 
+%   \end{block}
+% \end{frame}
+\begin{frame}{Decentralized OI}%{What made them heros of top magazine cover?}
+  \begin{columns}
+    \column[T]{0.5\textwidth}
+    \begin{center}
+      David Kempe
+
+      \includegraphics[width=0.7\textwidth]{figs/extras/david-kempe}
+    \end{center}
+    
+    \column[T]{0.5\textwidth}
+    \begin{center}
+      Frank McSherry
+
+      \includegraphics[width=0.7\textwidth]{figs/extras/frank-mcsherry}
+    \end{center}
+  \end{columns}
+
+  \begin{center}
+    % http://www.cc.gatech.edu/~mihail/D.8802readings/mcsherrystoc04.pdf
+    \textit{A Decentralized Algorithm for Spectral Analysis} \\
+    Department of Computer Science and Engineering, University of Washington \\
+    2006
+  \end{center}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Decentralized OI}{Sketch of the algorithm}
+\begin{frame}{Decentralized OI}{Motivation}
+  \begin{block}{Can we...?}
+    \begin{itemize}
+    \item Can we \structure{omit masted} nodes? (master fault is critical)
+    \item Can we compute \structure{more eigenvectors} and handle more general \structure{graph matrices}?
+    \end{itemize}
+  \end{block}
+
+  \pause
+  \begin{columns}
+    \column{.45\textwidth}
+    \includegraphics<2->[width=1.\textwidth]{figs/tex/graph}
+
+    \column{.6\textwidth}
+    \begin{block}{Min-cut approximation}
+      %\begin{align*}
+      \structure{\fbox{$v_{n-1} = \arg \min_{\norm{x}=1} \mathbf{x}^T{\cal L} \mathbf{x}$}}
+      % \end{align*}
+      {\footnotesize
+        \begin{align*}
+          {\cal L} = D - A = 
+          \left[\begin{matrix}3 & -1 & 0 & -1 & -1\\-1 & 4 & -1 & 0 & -2\\0 & -1 & 4 & -1 & -2\\-1 & 0 & -1 & 3 & -1\\-1 & -2 & -2 & -1 & 6\end{matrix}\right]
+        \end{align*}
+      }
+    \end{block}
+  \end{columns}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Decentralized OI}{Orthonormalization in OI}
+  \begin{columns}
+    \column{.5\textwidth}
+    % Classic orthonormalization: 
+    $QR$-factorization: $QR = V$
+    % \begin{itemize}
+    % \item $Q$ is orthonormal ($Q^TQ = I$)
+    % \item $R$ is triangular
+    % \end{itemize}
+    \column{.5\textwidth}
+    \includegraphics[width=0.8\textwidth]{figs/extras/householder-reflection}%householder-matrix}%
+  \end{columns}
+
+  \begin{columns}
+    \column[T]{.5\textwidth}
+    \begin{block}{Orthogonal iterations}
+      \begin{algorithm}[H]
+        \KwData{$A$, $k$}
+        \KwResult{$Q$}
+        \BlankLine
+
+        Choose initial guess for $Q$ {\small (random orthonormal $n \times k$ matrix)} \;
+
+        \While{$\text{error}{(Q)} > \epsilon$ }{
+          $V \gets A Q$ \;
+          $Q \gets \structure{\texttt{Orthonormalize}}(V)$
+        }
+      \end{algorithm}
+    \end{block}
+    \column[T]{.5\textwidth}
+
+    \begin{block}{Householder reflection}
+      \begin{align*}
+        Q_1 &= I - 2 \mathbf{v}\mathbf{v}^T \\
+        \mathbf{v} &= \frac{\mathbf{u}}{\|\mathbf{u}\|}, 
+                     \mathbf{u} = \mathbf{x} - \alpha_1\mathbf{e}_1 \\
+        Q_1\mathbf{x}_1 &= (\alpha_1, 0, \cdots, 0)^T
+      \end{align*}
+  \end{block}
+  \end{columns}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Decentralized OI}{Sketch of the Kempe-McSherry algorithm}
   \begin{columns}
     \column{.5\textwidth}
     % Classic orthonormalization: 
