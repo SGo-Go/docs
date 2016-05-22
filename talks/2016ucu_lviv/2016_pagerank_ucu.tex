@@ -19,8 +19,12 @@
 \usepackage{dirtree}
 
 \usepackage{ulem}
+\usepackage{bbm}
 
 \newcommand{\PageRank}{\texttt{PageRank}\xspace}
+\newcommand{\TrustRank}{\texttt{TrustRank}\xspace}
+\newcommand{\MapReduce}{\texttt{MapReduce}\xspace}
+\newcommand{\ones}{\mathbbm{1}}
 
 \newcommand{\Bsof}{\texttt{BSOF}\xspace}
 \newcommand{\Bstri}{\texttt{BSTRI}\xspace}
@@ -113,6 +117,37 @@
 % \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{frame}{\PageRank}%{What made them heros of top magazine cover?}
+  \begin{columns}
+    \column[T]{0.5\textwidth}
+\begin{center}
+    Sergey Brin
+
+    \includegraphics[width=0.7\textwidth]{figs/extras/sergey-brin}
+\end{center}
+    
+    \column[T]{0.5\textwidth}
+\begin{center}
+    Larry Page
+
+    \includegraphics[width=0.7\textwidth]{figs/extras/larry-page}
+
+\end{center}
+  \end{columns}
+
+  \begin{center}
+    % http://infolab.stanford.edu/~backrub/google.html
+    \textit{The Anatomy of a Large-Scale Hypertextual Web Search Engine} \\
+    Computer Science Department, Stanford University \\
+    1998
+  \end{center}
+% Sergey Brin and Lawrence Page
+% {sergey, page}@cs.stanford.edu
+% 
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{\PageRank}{What made them heros of top magazine cover?}
   \begin{columns}
     \column[T]{0.5\textwidth}
@@ -123,6 +158,8 @@
     \includegraphics[width=1.\textwidth]{figs/extras/brin-page-time}
   \end{columns}
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Model and basic algorithm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{\PageRank : The model}{Measure of importance}
   \begin{columns}
@@ -160,64 +197,141 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{\PageRank : The model}{Random surfing as Markov process}
   % probability distribution for the location of a random surfer
-
-  % \begin{block}{Hubbard model}
   \begin{columns}
     \column{0.2\textwidth}
     \includegraphics[width=1.\textwidth]{figs/extras/web-surfer}
-    \column{0.5\textwidth}
-      \includegraphics<1>[width=1.\textwidth]{figs/tex/graph}
-      \includegraphics<2>[width=1.\textwidth]{figs/tex/graph_probability0}
-      \includegraphics<3>[width=1.\textwidth]{figs/tex/graph_probability1}
-      \includegraphics<4>[width=1.\textwidth]{figs/tex/graph_probability2}
+    \column{0.45\textwidth}
+    \includegraphics<1>[width=1.\textwidth]{figs/tex/graph}
+    \includegraphics<2>[width=1.\textwidth]{figs/tex/graph_probability0}
+    \includegraphics<3>[width=1.\textwidth]{figs/tex/graph_probability1}
+    \includegraphics<4>[width=1.\textwidth]{figs/tex/graph_probability2}
     \column{0.4\textwidth}
     
-      \begin{exampleblock}{Probabilities}
-        \begin{enumerate}
-        \item<2-> $p = (1,0,0,0,0,0)$
-        \item<3-> $p = (0,0,0,0,0,1)$
-        \item<4-> $p = (0,\frac{2}{5},\frac{2}{5},\frac{1}{5},0)$
-        \end{enumerate}
-      \end{exampleblock}
+    \begin{exampleblock}{Probabilities}
+      \begin{enumerate}
+      \item<2-> $\Pr = (1,0,0,0,0)$
+      \item<3-> $\Pr = (0,0,0,0,1)$
+      \item<4-> $\Pr = (0,\frac{2}{5},\frac{2}{5},\frac{1}{5},0)$
+      \end{enumerate}
+    \end{exampleblock}
   \end{columns}
-  % \end{block}
 
-   \pause
-   \begin{block}{Restrictions}
-     \begin{itemize}
-     \item \structure{strongly connected} graph
-     \item \structure{no dead-ends}
-     \end{itemize}
-   \end{block}
+  \pause 
+  \begin{block}{Probability evolution}
+    \structure{
+      \begin{equation*}
+        {\Pr}'(x) = \sum_{y \to x} \frac{\Pr(y)}{\deg^+(y)}
+      \end{equation*}
+    }
+    {\small
+      \begin{itemize}
+      \item $\deg^+(y)$ -- outdegree of $y$
+      \end{itemize}
+    }
+  \end{block}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{\PageRank : The model}{Transition matrix of the Web}
   % probability distribution for the location of a random surfer
 
-  % \begin{block}{Hubbard model}
   \begin{columns}
-    \begin{column}{0.45\textwidth}
-      % \includegraphics[width=1.\textwidth]{figs/extras/term-spam-google}
-    \end{column}
-    \begin{column}{0.7\textwidth}
+    \column{0.45\textwidth}
+    \includegraphics[width=1.\textwidth]{figs/tex/graph}
+    %\begin{exampleblock}<1>{Matrix-vector representation}
+      \structure{
+        \begin{equation*}
+          M =
+          \left[\begin{matrix}0 & 1 & 0 & \frac{1}{2} & 0\\0 & 0 & 1 & 0 & \frac{2}{5}\\0 & 0 & 0 & \frac{1}{2} & \frac{2}{5}\\0 & 0 & 0 & 0 & \frac{1}{5}\\1 & 0 & 0 & 0 & 0\end{matrix}\right]
+        \end{equation*}
+      }
+      % \end{exampleblock}
 
-      \begin{exampleblock}{Restrictions}
-        \begin{itemize}
-        \item \structure{strongly connected} graph
-        \item \structure{no dead-ends}
-        \end{itemize}
-      \end{exampleblock}
-    \end{column}
-  \end{columns}
-  % \end{block}
-
-   \pause
-   \begin{block}{Restrictions}
+    \column{0.55\textwidth}
+   \begin{block}{Matrix-vector representation}
+     \structure{
+       \begin{equation*}
+         {\Pr}' = M \cdot {\Pr}
+       \end{equation*}
+     }
      \begin{itemize}
-     \item \structure{strongly connected} graph
+     \item $M$: 
+       $m_{xy}=\begin{cases}1/\deg^+(y), & y \to x\\ 0, &y \not\to x \end{cases}$
+     \end{itemize}
+     % A matrix whose column sums are at most 1 is called \structure{substochastic}
+     $M$ is \structure{stochastic} matrix
+     \begin{equation*}
+       \forall y: \sum_x m_{xy} = 1
+     \end{equation*}
+   \end{block}
+  \end{columns}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : The model}{Simulation of random surfer}
+  \begin{columns}
+    \column[T]{0.45\textwidth}
+    \includegraphics<1>[width=1.\textwidth]{figs/tex/graph_tansmatr0}
+    \includegraphics<2>[width=1.\textwidth]{figs/tex/graph_tansmatr1}
+    \includegraphics<3>[width=1.\textwidth]{figs/tex/graph_tansmatr2}
+    \includegraphics<4>[width=1.\textwidth]{figs/tex/graph_tansmatr3}
+    \includegraphics<5->[width=1.\textwidth]{figs/tex/graph_tansmatrN}
+
+    \column[T]{0.55\textwidth}
+    \begin{exampleblock}{Simulation of random surfer}
+      \only<1>{
+        { ${\Pr}^i$ probability distribution for the location of a random surfer at step $i$}
+          \begin{align}
+            {\Pr}^0 &= \left[\begin{matrix}\frac{1}{5}&\frac{1}{5}&\frac{1}{5}&\frac{1}{5}&\frac{1}{5}\end{matrix}\right]^T \\
+            {\Pr}^{i+1} &= M \cdot \Pr^{i}
+          \end{align} 
+        }
+      \only<2>{ \begin{equation*}
+          \left[\begin{matrix}\frac{3}{10}\\\frac{7}{25}\\\frac{9}{50}\\\frac{1}{25}\\\frac{1}{5}\end{matrix}\right] = 
+          \left[\begin{matrix}0 & 1 & 0 & \frac{1}{2} & 0\\0 & 0 & 1 & 0 & \frac{2}{5}\\0 & 0 & 0 & \frac{1}{2} & \frac{2}{5}\\0 & 0 & 0 & 0 & \frac{1}{5}\\1 & 0 & 0 & 0 & 0\end{matrix}\right]
+          \times
+          \left[\begin{matrix}\frac{1}{5}\\\frac{1}{5}\\\frac{1}{5}\\\frac{1}{5}\\\frac{1}{5}\end{matrix}\right]
+        \end{equation*} }
+
+      \only<3>{ \begin{equation*}
+          \left[\begin{matrix}\frac{3}{10}\\\frac{13}{50}\\\frac{1}{10}\\\frac{1}{25}\\\frac{3}{10}\end{matrix}\right] = 
+          \left[\begin{matrix}0 & 1 & 0 & \frac{1}{2} & 0\\0 & 0 & 1 & 0 & \frac{2}{5}\\0 & 0 & 0 & \frac{1}{2} & \frac{2}{5}\\0 & 0 & 0 & 0 & \frac{1}{5}\\1 & 0 & 0 & 0 & 0\end{matrix}\right]
+          \times
+          \left[\begin{matrix}\frac{3}{10}\\\frac{7}{25}\\\frac{9}{50}\\\frac{1}{25}\\\frac{1}{5}\end{matrix}\right]
+        \end{equation*} }
+
+      \only<4>{ \begin{equation*}
+          \left[\begin{matrix}\frac{7}{25}\\\frac{11}{50}\\\frac{7}{50}\\\frac{3}{50}\\\frac{3}{10}\end{matrix}\right] = 
+          \left[\begin{matrix}0 & 1 & 0 & \frac{1}{2} & 0\\0 & 0 & 1 & 0 & \frac{2}{5}\\0 & 0 & 0 & \frac{1}{2} & \frac{2}{5}\\0 & 0 & 0 & 0 & \frac{1}{5}\\1 & 0 & 0 & 0 & 0\end{matrix}\right]
+          \times
+          \left[\begin{matrix}\frac{3}{10}\\\frac{13}{50}\\\frac{1}{10}\\\frac{1}{25}\\\frac{3}{10}\end{matrix}\right]
+        \end{equation*} }
+
+      \only<5>{\small \begin{equation*}
+          \underbrace{\left[\begin{matrix}0.28\\0.25\\0.14\\0.06\\0.28\end{matrix}\right]}_{{\Pr}^{\infty}} = 
+          \underbrace{\left[\begin{matrix}0 & 1 & 0 & \frac{1}{2} & 0\\0 & 0 & 1 & 0 & \frac{2}{5}\\0 & 0 & 0 & \frac{1}{2} & \frac{2}{5}\\0 & 0 & 0 & 0 & \frac{1}{5}\\1 & 0 & 0 & 0 & 0\end{matrix}\right]}_{M}
+          \times
+          \underbrace{\left[\begin{matrix}0.28\\0.25\\0.14\\0.06\\0.28\end{matrix}\right]}_{{\Pr}^{\infty}}
+        \end{equation*} }
+
+      \only<6>{ 
+        \structure{ \begin{equation*}
+            M \cdot {\Pr}^{\infty} = 1 \cdot {\Pr}^{\infty}
+          \end{equation*} }
+
+        ${\Pr}^{\infty}$ is eigenvector of $M$ with eigenvalue $\lambda = 1$
+      }
+    \end{exampleblock}
+  \end{columns}
+
+  \uncover<6->{
+   \begin{block}{\alert{Restrictions}}
+     \structure{Strongly connected} graph
+     \begin{itemize}
      \item \structure{no dead-ends}
+     \item \structure{no spider traps}
      \end{itemize}
    \end{block}
+ }
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{\PageRank : The model}{Structure of the Web}
@@ -241,6 +355,11 @@
     \end{block}
 
     \pause
+%     Three questions naturally come to mind:
+%     Does the sequence I k always converge?
+%     Is the vector to which it converges independent of the initial vector I 0?
+%     Do the importance rankings contain the information that we want? 
+% - See more at: http://www.ams.org/samplings/feature-column/fcarc-pagerank#sthash.lzdlgcBE.dpuf
     \begin{block}{\alert{Problems}}
       \begin{itemize}
       \item \structure{dead-ends} %: no links out
@@ -253,158 +372,312 @@
 \begin{frame}{\PageRank : The model}{Avoiding dead ends by dropping}
   % A matrix whose column sums are at most 1 is called \structure{substochastic}
   \begin{columns}
-    \column{0.5\textwidth}
-    \includegraphics[width=1.\textwidth]{figs/pdf/WebBowTie}
+    \column{0.45\textwidth}
+    \includegraphics<1>[width=1.\textwidth]{figs/tex/graph_dead_end}
+    \includegraphics<2>[width=1.\textwidth]{figs/tex/graph_dead_end1}
+    \includegraphics<3>[width=1.\textwidth]{figs/tex/graph_dead_end2}
+    \includegraphics<4>[width=1.\textwidth]{figs/tex/graph_dead_end3}
 
-    \column{0.5\textwidth}
+    \column{0.55\textwidth}
+    \begin{exampleblock}{Handling dead ends}% by dropping
+      \footnotesize
+      \begin{itemize}
+      \item<1> ${\Pr} = \left[\begin{matrix}\frac{1}{5}&\frac{1}{5}&\frac{1}{5}&\frac{1}{5}&\frac{1}{5}\end{matrix}\right]^T$
+      \item<2> ${\Pr} = \left[\begin{matrix}\frac{1}{4}&*&\frac{1}{4}&\frac{1}{4}&\frac{1}{4}\end{matrix}\right]^T$
+      \item<3> ${\Pr} = \left[\begin{matrix}0.18&*&0.36&0.18&0.27\end{matrix}\right]^T$
+      \item<4> ${\Pr} = \left[\begin{matrix}0.18&0.42&0.36&0.18&0.27\end{matrix}\right]^T$
+    \end{itemize}
+  \end{exampleblock}
 
-    \begin{block}{Algorithm}
+  \end{columns}
+    \begin{block}{Algorithm: dropping dead ends (for substochastic $M$)} 
+      % A matrix whose column sums are at most 1 is called \structure{substochastic}
       \begin{enumerate}
       \item<1,2> \structure{Backward graph reduction}: remove dead ends iteratively
       \item<1,3> \structure{Compute {\PageRank}s} of reduced graph
       \item<1,4> \structure{Forward \PageRank computing}
       \end{enumerate}
     \end{block}
-  \end{columns}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{\PageRank : The model}{Teleporting}
-  % A matrix whose column sums are at most 1 is called \structure{substochastic}
   \begin{columns}
-    \column{0.5\textwidth}
-    \includegraphics[width=1.\textwidth]{figs/tex/graph_dead_end}
+    \column{0.45\textwidth}
+    \includegraphics<1>[width=1.\textwidth]{figs/tex/graph_dead_end}
+    \includegraphics<2->[width=1.\textwidth]{figs/tex/graph_dead_end_pagerank}
 
-    \column{0.5\textwidth}
+    \begin{exampleblock}{{\PageRank}s with $\beta = 0.8$} %Classical 
+      \footnotesize
+      \begin{itemize}
+      \item<1> ${\Pr}^0 = \left[\begin{matrix}\frac{1}{5}&\frac{1}{5}&\frac{1}{5}&\frac{1}{5}&\frac{1}{5}\end{matrix}\right]^T$
+      \item<2> ${\Pr}^{\infty} = \left[\begin{matrix}0.14&0.32&0.21&0.12&0.2\end{matrix}\right]^T$
+      \end{itemize}
+    \end{exampleblock}
 
-    \begin{block}{Algorithm}
-      \begin{enumerate}
-      \item<1,2> \structure{Backward graph reduction}: remove dead ends iteratively
-      \item<1,3> \structure{Compute {\PageRank}s} of reduced graph
-      \item<1,4> \structure{Forward \PageRank computing}
-      \end{enumerate}
+    \column{0.55\textwidth}
+    \begin{block}{Idea}
+      Introduce small probability $\structure{1-\beta}$ of \structure{teleporting} to a random page (usually $0 < {1-\beta}\le 0.2$)
+      % \structure{
+        \begin{align}
+          {\Pr}' &= \beta \cdot M \cdot {\Pr} + (1-\beta) \frac{\ones}{n} \\
+          {\Pr}'(x) &= \frac{1-\beta}{n} + \beta \sum_{y \to x} \frac{\Pr(y)}{\deg^+(y)}
+        \end{align}
+        % }
+        
+        \begin{itemize}\small
+        \item Brin and Page: 50-100 iterations to converge
+        % \item convergence depends on the $\lambda_2$
+        % \item link structure of the Web $\lambda_2 \approx 0.9$
+        \end{itemize}
     \end{block}
   \end{columns}
-
-  \begin{equation*}
-  \end{equation*}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{Applications}{Major application areas}
-  \begin{exampleblock}{Key}
-    Yet the war between those who want to make the Web useful and those
-    who would exploit it for their own purposes is never over.
-  \end{exampleblock}
-
-  \pause
-  Techniques for preventing link spammers (search-engine optimization)
-  \begin{itemize}
-  \item TrustRank
-  \item topic-sensitive \PageRank
-  \end{itemize}
+\subsection{Implementation using \MapReduce}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : \MapReduce}{\MapReduce workflow}
+  \begin{center}
+    \includegraphics[width=.9\textwidth]{figs/extras/mapreduce}
+  \end{center}
 \end{frame}
-
-\section{Algorithm}
-
-\subsection{Serial BSOI algorithm}
-
-\begin{frame}{Basic algorithms}{Framework}
-  \begin{block}{Factorization-based approaches to matrix inversion}
-    \begin{itemize}
-    \item based on Gaussian elimination
-      \begin{itemize}
-      \item row partial pivoting is fast but unstable for $p$-cyclic matrices (S. Wright, 1993)
-        %% \item panel rank-revealing pivoting strategy is stability in most cases but does not preserve structure
-      \end{itemize}
-    \item based on structured orthogonal factorization
-      \begin{itemize}
-      \item factorization is stable and has 
-        identical complexity to the best known Gaussian elimination algorithms
-      \end{itemize}
-    \end{itemize}
-  \end{block}
-
-  \pause
-  \begin{block}{Orthogonal inversion approach}
-    \begin{centering}
-      $\structure{\fbox{$H^{-1} = R^{-1}Q^T$}}$
-    \end{centering}
-    \begin{enumerate}
-    \item Compute QR decomposition $H = QR$
-    \item Invert the factor $R$ 
-    \item Apply the factor $Q$ to $R^{-1}$ 
-    \end{enumerate}
-  \end{block}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : \MapReduce}{Word count with \MapReduce}
+  \begin{center}
+    \includegraphics[width=1.0\textwidth]{figs/extras/mapreduce-wc}
+  \end{center}
 \end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : \MapReduce}{GFS}
+    \includegraphics[width=1.12\textwidth]{figs/pdf/gfs}%{WebBowTie}
 
-\begin{frame}{Basic algorithms}{Structured orthogonal factorization}
-  \begin{block}{{\tt BSOF} -- Wright's serial version of SOF algorithm}
-    \begin{algorithm}[H]%[thb]
-      \KwData{$H$, $n$, $p$}
-      \KwResult{$R$, $\{Q^{(k)} | 1 \leq k < p - 1 \}$}
-      \BlankLine
-
-      $R \gets O$; $\tilde{A}_1 \gets A_1$ ; $\tilde{B}_1 \gets B_p$\; 
-
-      \For{$k \in \{1, 2,..., p-2 \}$ }{
-        Compute regular QR: 
-        $Q^{(k)} 
-        \begin{bmatrix}
-          R_{kk} \\ 0
-        \end{bmatrix}
-        =
-        \begin{bmatrix}
-          \tilde{A}_k \\ B_k
-        \end{bmatrix}$\;
-
-        %% Update 
-        $\begin{bmatrix}
-          R_{k,k+1} & R_{k,p} \\ \tilde{A}_{k + 1} & \tilde{B}_{k + 1}
-        \end{bmatrix}
-        \gets
-        \left( Q^{(k)} \right)^{T} 
-        \begin{bmatrix}
-          0 & \tilde{B}_k \\ {A}_{k + 1} & 0
-        \end{bmatrix}$;
-      }
-      
-      Compute the QR: 
-      $Q^{(p-1)} 
-      \begin{bmatrix}
-        R_{p-1,p-1} & R_{p-1,p}\\
-        0 & R_{p,p}
-      \end{bmatrix}
-      = \begin{bmatrix}
-        \tilde{A}_{p-1} & \tilde{B}_{p-1}\\ 
-              {B}_{p-1} & {A}_{p,p}\\ 
-      \end{bmatrix}$;
-    \end{algorithm}
-  \end{block}
+    \href{http://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf}{\tiny \copyright 
+      Ghemawat, S.; Gobioff, H.; Leung, S.-T. \textit{The Google File System}, Google}
 \end{frame}
-
-\begin{frame}{Basic algorithms}{Inversion via block back substitution}
-  \begin{block}{{\tt BSTRI\_RV} -- Row Version of the BBS}
+\begin{frame}{\PageRank : \MapReduce}{GFS}
+  \begin{center}
+    \includegraphics[width=.9\textwidth]{figs/extras/GFS2}
+  \end{center}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : \MapReduce}{\PageRank using \MapReduce}
+  \begin{block}{Mapper (node $y$)}
     \begin{algorithm}[H]
       \SetKwFunction{Batched}{Batched}
 
-      \KwData{$R$, $n$, $p$}
-      \KwResult{$X$}
+      \KwData{$\braket{y}{\{x_1,...,x_k\}, \Pr(y)}$ (node -- outlinks)}
       \BlankLine
 
-      $X \gets O$\; 
-      $X_{p-2:p,p-2:p}\gets R_{p-2:p,p-2:p}^{-1}$\;
-      \Batched$_{i = 1:p-3}$ \{$X_{ii}\gets R_{ii}^{-1}$\} \;
-      $X_{1:p-3,p}\gets R_{1:p-3,p} X_{p,p} $ \;
-      \Batched$_{i = 1:p-3}$ \{$X_{i,p}\gets -X_{ii}  R_{i,p}$, $X_{i,i+1}\gets -X_{ii}  R_{i,i+1}$ \} \;
-      \For{$i \in \{p-3, p-4,..., 1 \}$ }{ 
-        $X_{i,i+2:p} \gets X_{i,i+2:p} + X_{i,i+1} X_{i+1,i+2:p} $ \;  
-        $X_{i,i+1} \gets X_{i,i+1}  X_{i+1,i+1}$\;}
+      \For{$j \in \{1,..., k \}$ }{ 
+        emit $\braket{x_j}{\frac{\Pr(y)}{\deg^+(y)}}$ \;
+      }
+      \uncover<2>{emit $\braket{y}{\{x_1,...,x_k\}}$ \;}
     \end{algorithm}    
   \end{block}
-  
-  \begin{block}{{\tt BSTRI\_CV} -- Column Version of the BBS}
-    Similar to {\tt BSTRI\_RV}
+
+  \begin{block}{Reducer (node $x$)}
+    \begin{algorithm}[H]
+      \SetKwFunction{Batched}{Batched}
+
+      \KwData{$\braket{x}{\{ 
+          \frac{\Pr(y_1)}{\deg^+(y_1)},...,\frac{\Pr(y_l)}{\deg^+(y_l)}
+          \uncover<2>{,\{x_1,...,x_k\}}
+          \}}$ (node -- $\Delta \Pr$)}
+      \BlankLine
+
+      ${\Pr}(x) \gets \frac{1-\beta}{n} + \beta \sum_{i = 1}^{l} \frac{\Pr(y_i)}{\deg^+(y_i)}$
+    \end{algorithm}    
   \end{block}
 \end{frame}
+% http://toolbarqueries.google.com/tbr?client=navclient-auto&ch=[HASH]features=Rank&q=info:[URL]&num=100&filter=0
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Modifications}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : Modifications}{Topic-sensitive \PageRank}
+  % Haveliwala, Taher (2002). "Topic-Sensitive PageRank"
+  \begin{block}{How to organize private \PageRank for each user?}
+    \begin{itemize}
+    \item \structure{classify users by interest} in each of the selected topics
+    \item one \structure{$\Pr$ vector for each} of some small number of \structure{topic}s
+    \item \structure{biase the PageRank} to favor pages of that topic
+      \uncover<2>{
+      \structure{
+          \begin{align*}
+            {\Pr}' &= \beta \cdot M \cdot {\Pr} + (1-\beta) \frac{\ones_S}{\abs{S}}
+          \end{align*}
+        }
+        \begin{itemize}
+        \item $S$ -- set of pages belonging to a certain topic (\structure{teleport set})
+        \end{itemize}
+      }
+    \end{itemize}
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : Modifications}{Link spam and \TrustRank}
+  \begin{exampleblock}{}
+    Yet the war between those who want to make the Web useful and those
+    who would exploit it for their own purposes is never over.
+
+    \href{http://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf}{\tiny \copyright 
+      Jeffrey D. Ullman %(from discussion about \PageRank)
+    }
+  \end{exampleblock}
+
+  \begin{columns}
+    \column{.7\textwidth}
+    \includegraphics[width=\textwidth]{figs/pdf/spamfarm}
+
+    \column{.4\textwidth}
+    \begin{itemize}
+    \item $n$ pages in total
+    \item $m$ supporting pages
+    \item 1 target page $t$
+    \end{itemize}
+  \end{columns}
+  \begin{equation*}
+    \Pr(t) = \Pr(\text{access.}) + \beta m 
+    \underbrace{\left( \frac{\beta \Pr(t)}{m} + \frac{1-\beta}{n} \right)}_{\Pr(\text{supporting page})}
+    \approx
+    \structure{\frac{\Pr(\text{access.})}{1-\beta^2}} + \frac{\beta}{1+\beta} \frac{m}{n}
+  \end{equation*}
+  % http://www2007.org/workshops/paper_102.pdf
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank : Modifications}{Link spam and \TrustRank}
+  % Techniques for preventing link spammers (search-engine optimization)
+  % \begin{itemize}
+  % \item topic-sensitive \PageRank
+  % \item \TrustRank
+  % \end{itemize}
+  \begin{exampleblock}{\TrustRank}
+    Topic-sensitive \PageRank, where the ``topic'' is a set of pages believed to be trustworthy
+    
+    \begin{itemize}
+    \item \structure{suitable teleport set}: 
+
+      domain whose membership is controlled (e.g., \texttt{.edu})
+      \pause
+    \item \structure{spam mass}
+      \begin{equation*}
+        \texttt{SpamMass}(y) = \frac{\text{\PageRank}(y) - \text{\TrustRank}(y)}{\text{\PageRank}(y)}
+      \end{equation*}
+      negative (small positive) $\texttt{SpamMass}(y)$ $\implies$ $y$ is probably not a spam
+  \end{itemize}
+  \end{exampleblock}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\PageRank as an orthogonal iteration}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank as an orthogonal iteration}{Eigenvectors \& convergence of OI}
+  \begin{definition}
+  \structure{Eigenvalues} ({\small $\lambda_1 \ge \lambda_2 \ge ... \ge \lambda_n$}) 
+  and \structure{eigenvectors}:% ({\small $\norm{v_i} = 1$}): 
+  \begin{align*}
+    \structure{A v_i} = \structure{\lambda_i v_i}
+  \end{align*}
+\end{definition}
+
+\begin{block}{Convergence of orthogonal iteration}
+  \small
+  Let $\lambda_i \neq \lambda_j$, $v_i^*\cdot v_j = 0$, $\norm{v_i} = 1$. 
+
+  Take arbitrary $u = c_{1}v_{1} + c_{2}v_{2} + \cdots + c_{n}v_{n}$
+  \begin{align*}
+    A^{k}u & =  c_{1}A^{k}v_{1} + c_{2}A^{k}v_{2} + \cdots + c_{n}A^{k}v_{n} \\ 
+           & =  c_{1}\lambda_{1}^{k}v_{1} + c_{2}\lambda_{2}^{k}v_{2} + \cdots + c_{n}\lambda_{n}^{k}v_{n} \\ 
+           & =  c_{1}\lambda_{1}^{k} \left( v_{1} + \frac{c_{2}}{c_{1}}\left(\frac{\lambda_{2}}{\lambda_{1}}\right)^{k}v_{2} + \cdots + \frac{c_{n}}{c_{1}}\left(\frac{\lambda_{n}}{\lambda_{1}}\right)^{k}v_{n}\right)
+    \\
+    \structure{v_1} &\structure{\approx \frac{1}{c_{1}\lambda_{1}^{k}} A^{k}u + {\cal O}\left(\frac{\lambda_{2}}{\lambda_{1}}\right)^{k}}
+  \end{align*}
+\end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank as an orthogonal iteration}{Convergence of \PageRank}
+  \begin{columns}
+    \column{.5\textwidth}
+    \structure{\fbox{Find $v_i$: $A v_i = \lambda_i v_i$}}
+    \begin{block}{Orthogonal iterations}
+      \begin{algorithm}[H]
+        \KwData{$A$, $k$}
+        \KwResult{$Q$}
+        \BlankLine
+
+        Choose initial guess for $Q$ {\small (random orthonormal $n \times k$ matrix)} \;
+
+        \While{$\text{error}{(Q)} > \epsilon$ }{
+          $V \gets A Q$ \;
+          $Q \gets \text{Orthonormalize}(V)$
+        }
+      \end{algorithm}
+    \end{block}
+    \column{.5\textwidth}
+    \structure{\fbox{Find $\Pr$: $M \cdot \Pr = 1 \cdot \Pr$}}
+    \begin{block}{\PageRank iterations}
+      \begin{algorithm}[H]
+        \KwData{$M$, $1$}
+        \KwResult{$\Pr$}
+        \BlankLine
+
+        Choose initial guess for $\Pr$ {\small ($\Pr = \ones/n$)} \;
+
+        \While{$\text{error}{(\Pr)} > \epsilon$ }{
+          $\Pr \gets M \cdot \Pr$ \;
+          \sout{$\text{Orthonormalize}(\Pr)$}
+        }
+      \end{algorithm}
+    \end{block}
+  \end{columns}
+
+\begin{itemize}\small
+\item convergence depends on the $\lambda_2$
+\item link structure of the Web $\lambda_2 \approx 0.9$
+  \begin{align*}
+    M = 
+  \end{align*}
+\end{itemize}
+
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\PageRank as an orthogonal iteration}{Structured orthogonal factorization}
+  \begin{columns}
+    \column{.5\textwidth}
+  \begin{block}{Orthogonal iterations}
+    \begin{algorithm}[H]
+      \KwData{$A$, $k$}
+      \KwResult{$Q$}
+      \BlankLine
+
+      Choose initial guess for $Q$ {\small (random orthonormal $n \times k$ matrix)} \;
+
+      \While{$\text{error}{(Q)} > \epsilon$ }{
+        $V \gets A Q$ \;
+        $Q \gets \text{Orthonormalize}(V)$
+      }
+    \end{algorithm}
+  \end{block}
+    \column{.5\textwidth}
+  \begin{block}{\PageRank iterations}
+    \begin{algorithm}[H]
+      \KwData{$M$, $1$}
+      \KwResult{$\Pr$}
+      \BlankLine
+
+      Choose initial guess for $\Pr$ {\small ($\Pr = \ones/n$)} \;
+
+      \While{$\text{error}{(\Pr)} > \epsilon$ }{
+        $\Pr \gets M \cdot \Pr$ \;
+        \sout{$\text{Orthonormalize}(\Pr)$}
+      }
+    \end{algorithm}
+  \end{block}
+\end{columns}
+\end{frame}
+
+\section{Decentralized OI}
+
+%Kempe-McSherry
+\subsection{Serial BSOI algorithm}
+
 
 \begin{frame}{Basic algorithms}{Complexity}  
   \begin{block}{Operation counts}
@@ -489,55 +762,8 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{Experimental results}{Performance tuning}
-
-  \begin{block}{Performance tuning approach}
-    benchmark LAPACK kernels 
-    $\to$
-    approximate parameters of PM %performance model
-    $\to$
-    embed approximates into the code
-  \end{block}
-
-  \begin{columns}<2->[t]%[thb]
-    \begin{column}[t]{0.5\textwidth}
-      \centering
-      CPU/GPU performance ratio parameters 
-      ($\kappa_R$, $\kappa_C$, and $\kappa_Q$)
-
-      % \visible<2->{
-      % \includegraphics[width=\textwidth]{./figs/pdf/kappa_params}}
-      
-      %% Approximation approach
-      \begin{itemize}
-        \small
-      \item 1st order rational functions of $n$
-      \item Gauss-Markov estimator
-      \end{itemize}
-    \end{column}
-
-    \begin{column}[t]{0.5\textwidth}
-      \centering
-      Switching ($l_F$) and  correction parameters 
-      ($c_i$, $c_j$, $c'_k$, and $c''_k$)
-      % \visible<2->{
-      %   \includegraphics[width=\textwidth]{./figs/pdf/lF_param_approx}}
-
-      %% Approximation approach
-      \begin{itemize}
-        \small
-      \item %% descending 
-        step-wise functions of $n$
-      \item 1D filtering + rounding
-      \end{itemize}
-    \end{column}
-
-  \end{columns}
-\end{frame}
-
 %% \frame[plain]{\centering
 %%   \Huge Thank you for your attantion!
 %%   \includegraphics[height=0.5\textheight]{figs/extras/question.jpg}
 %% }
-
 \end{document}

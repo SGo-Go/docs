@@ -14,3 +14,8 @@ http://www.chrisharrison.net/index.php/Visualizations/InternetMap
 http://olihb.com/wp-content/uploads/2014/08/map_hi.jpg
 
 https://upload.wikimedia.org/wikipedia/commons/7/7b/Householder.svg
+
+pdftk ./gfs-sosp2003.pdf  cat 3 output gfs_page.pdf
+pdfcrop --margins '-30 0 -30 -510' --clip ./gfs_page.pdf ./gfs.pdf
+
+pdfcrop --margins '-40 -100 -40 -100' --clip ./spamfarm_page.pdf ./spamfarm.pdf
