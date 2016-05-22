@@ -21,6 +21,7 @@
 \usepackage{ulem}
 \usepackage{bbm}
 
+\newcommand{\PushSum}{\texttt{PushSum}\xspace}
 \newcommand{\PageRank}{\texttt{PageRank}\xspace}
 \newcommand{\TrustRank}{\texttt{TrustRank}\xspace}
 \newcommand{\MapReduce}{\texttt{MapReduce}\xspace}
@@ -90,15 +91,23 @@
 \begin{document}
 
 \frame[plain]{\titlepage}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Intro}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{frame}{Outline}%[pausesections]{Outline}
   \tableofcontents
 \end{frame}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Introduction}{Sources of big graphs}
+  \includegraphics[width=1.0\textwidth]{figs/extras/facebook-high-res-friendship-world-map-paul-butler}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Introduction}{Sources of big graphs}
+  \includegraphics[width=1.0\textwidth]{figs/extras/collabo_links-medium}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\PageRank}
-
-% %% \subsection{Problem formulation}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % \begin{frame}{Problem formulation}
 %   \begin{definition}[$p$-cyclic matrix]
 %     \begin{equation} \label{eq:matr_A}
@@ -115,10 +124,7 @@
 %     where $A_i$ and $B_i$ are non-zero blocks
 %   \end{definition}
 % \end{frame}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
 \begin{frame}{\PageRank}%{What made them heros of top magazine cover?}
   \begin{columns}
     \column[T]{0.5\textwidth}
@@ -576,7 +582,7 @@
     \structure{A v_i} = \structure{\lambda_i v_i}
   \end{align*}
 \end{definition}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{block}{Convergence of orthogonal iteration}
   \small
   Let $\lambda_i \neq \lambda_j$, $v_i^*\cdot v_j = 0$, $\norm{v_i} = 1$. 
@@ -592,7 +598,7 @@
 \end{block}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{\PageRank as an orthogonal iteration}{Convergence of \PageRank}
+\begin{frame}{\PageRank as an orthogonal iteration}{\PageRank convergence}
   \begin{columns}
     \column{.5\textwidth}
     \structure{\fbox{Find $v_i$: $A v_i = \lambda_i v_i$}}
@@ -606,7 +612,7 @@
 
         \While{$\text{error}{(Q)} > \epsilon$ }{
           $V \gets A Q$ \;
-          $Q \gets \text{Orthonormalize}(V)$
+          $Q \gets \texttt{Orthonormalize}(V)$
         }
       \end{algorithm}
     \end{block}
@@ -622,148 +628,157 @@
 
         \While{$\text{error}{(\Pr)} > \epsilon$ }{
           $\Pr \gets M \cdot \Pr$ \;
-          \sout{$\text{Orthonormalize}(\Pr)$}
+          \sout{$\texttt{Orthonormalize}(\Pr)$}
         }
       \end{algorithm}
     \end{block}
   \end{columns}
 
-\begin{itemize}\small
-\item convergence depends on the $\lambda_2$
-\item link structure of the Web $\lambda_2 \approx 0.9$
-  \begin{align*}
-    M = 
-  \end{align*}
-\end{itemize}
-
+  \pause
+  \begin{block}{\PageRank convergence estimates}
+    \begin{itemize}\small
+    \item $\lambda_1 = 1, v_1 = \Pr\implies$ convergence depends on $\lambda_2$: \fbox{\structure{$\epsilon = {\cal O}(\lambda_2^k)$}}
+    \item link structure of the Web $\lambda_2 \approx 0.9$:
+      $%\begin{align*}
+        {\lambda_2^k} = 0.9^{328} \approx 10^{-15} = {\epsilon}
+      $%\end{align*}
+    \end{itemize}
+  \end{block}
 \end{frame}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{frame}{\PageRank as an orthogonal iteration}{Structured orthogonal factorization}
+\section{Decentralized OI}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Kempe-McSherry algorithm}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Decentralized OI}{\PushSum protocol}
+  \begin{block}{Convergence of decentralized OI}
+    It converges essentially in
+    \structure{${\cal O}(\tau_{\text{mix}} \log^2 n)$}
+    rounds of communication and computation, 
+    where $\tau_{\text{mix}}$ is the mixing  time  of  a  random  walk  on  the  network. 
+  \end{block}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Decentralized OI}{Sketch of the algorithm}
   \begin{columns}
     \column{.5\textwidth}
-  \begin{block}{Orthogonal iterations}
-    \begin{algorithm}[H]
-      \KwData{$A$, $k$}
-      \KwResult{$Q$}
-      \BlankLine
+    % Classic orthonormalization: 
+    $QR$-factorization: $QR = V$
 
-      Choose initial guess for $Q$ {\small (random orthonormal $n \times k$ matrix)} \;
-
-      \While{$\text{error}{(Q)} > \epsilon$ }{
-        $V \gets A Q$ \;
-        $Q \gets \text{Orthonormalize}(V)$
-      }
-    \end{algorithm}
-  \end{block}
     \column{.5\textwidth}
-  \begin{block}{\PageRank iterations}
-    \begin{algorithm}[H]
-      \KwData{$M$, $1$}
-      \KwResult{$\Pr$}
-      \BlankLine
+    \begin{align*}
+      \structure{K}& = \structure{V^TV} = (QR)^T(QR) \\ &= R^TQ^TQR = \structure{R^T R}
+    \end{align*}
+  \end{columns}
 
-      Choose initial guess for $\Pr$ {\small ($\Pr = \ones/n$)} \;
+  \begin{columns}
+    \column[T]{.5\textwidth}
+    \begin{block}{Orthogonal iterations}
+      \begin{algorithm}[H]
+        \KwData{$A$, $k$}
+        \KwResult{$Q$}
+        \BlankLine
 
-      \While{$\text{error}{(\Pr)} > \epsilon$ }{
-        $\Pr \gets M \cdot \Pr$ \;
-        \sout{$\text{Orthonormalize}(\Pr)$}
-      }
-    \end{algorithm}
-  \end{block}
-\end{columns}
-\end{frame}
+        Choose initial guess for $Q$ {\small (random orthonormal $n \times k$ matrix)} \;
 
-\section{Decentralized OI}
-
-%Kempe-McSherry
-\subsection{Serial BSOI algorithm}
-
-
-\begin{frame}{Basic algorithms}{Complexity}  
-  \begin{block}{Operation counts}
-    \begin{center}
-      \rowcolors[]{1}{blue!20}{blue!10} %\rowcolors{1}{Blue!20}{Blue!5}
-      \begin{tabular}{r|l|c|c|c}
-        \toprule
-        Phase & Routine & Additions & Multiplications & Total Flops  \\
-        \hline
-        I&{\tt BSOF} & 
-        $\displaystyle\Theta\left(\frac{23}{3} n^{3} p\right)$
-        & $\displaystyle\Theta\left(\frac{23}{3} n^{3} p\right)$
-        & $\displaystyle\Theta\left(\frac{46}{3} n^{3} p\right)$\\
-        II&{\tt BSTRI\_RV} & 
-        $\displaystyle\Theta\left(\frac{1}{2} n^3 p^{2}\right)$
-        & $\displaystyle\Theta\left(\frac{1}{2} n^3 p^{2}\right)$
-        & $\displaystyle\Theta\left(n^3 p^{2}\right)$\\
-        \cline{2-5}
-        &{\tt BSTRI\_CV} & 
-        $\displaystyle\Theta\left(n^3 p^{2}\right)$
-        & $\displaystyle\Theta \left(n^3 p^{2}\right)$
-        & $\displaystyle\Theta \left(2 n^3 p^{2}\right)$\\
-        III&{\tt BSOI} & 
-        $\displaystyle\Theta \left(3 n^3 p^2\right)$
-        & $\displaystyle\Theta \left(3 n^3 p^2\right)$
-        & $\displaystyle\Theta \left(6 n^3 p^2\right)$\\
-        \bottomrule  
-      \end{tabular}
-    \end{center}
-    \pause
-    To sum up, 
-    \[
-    \fbox{
-      $\text{Total complexity} = \alert{\displaystyle\Theta\left(\frac{7}{2} n  N^2\right)}$}
-    \]
-  \end{block}
-\end{frame}
-
-
-\section{Experimental results and analysis}
-
-\begin{frame}{Experimental results}{Experimental setup}
-  \renewcommand*\DTstyle{\sffamily\small}
-  \renewcommand*\DTstylecomment{\footnotesize\textsl}
-  \DTsetlength{0.2em}{1em}{0.2em}{0.4pt}{0.4pt}
-  \begin{itemize}
-  \item \structure{Hardware}
-    \begin{columns}
-      \begin{column}{.5\textwidth}
-        \dirtree{%
-          .1 \structure{Single-GPU}\DTcomment{Hybrid node at UCD}.
-          .2 2 $\times$ Intel Xeon X5670.
-          .3 6-cores, 2.9GHz.
-          .2 1 $\times$ %% CUDA-enabled
-          NVIDIA GTX480. %, Fermi
-          .3 15 SMs $\times$ 32 cores.
+        \While{$\text{error}{(Q)} > \epsilon$ }{
+          $V \gets A Q$ \;
+          $Q \gets \structure{\texttt{Orthonormalize}}(V)$
         }
-      \end{column}
-      \begin{column}{.5\textwidth}
-        \dirtree{%
-          .1 \structure{Multi-GPU}\DTcomment{Dirac cluster at NERSC}.
-          .2 2 $\times$ Intel Xeon E5530. %Nehalem
-          .3 4-cores, 2.4 GHz.
-          .2 4 $\times$ NVIDIA Tesla C1060.
-          .3 240 cores. %1.296 GHz
-        }
-      \end{column}
-    \end{columns}
+      \end{algorithm}
+    \end{block}
+    \column[T]{.5\textwidth}
+    \begin{block}{Decentralized OI  (on node $x$)}
+      \begin{algorithm}[H]
+        \KwData{$A_x$, $k$}
+        \KwResult{$Q_x$}
+        \BlankLine
 
-  \item \structure{Software}
-    \begin{itemize}
-    \item POSIX threads for threading in step 2 of \Bsoftri
-    \item CuBlas, Magma, and Intel's MKL for LAPACK interface
-    \end{itemize}
-    
-  \item \structure{Codes}
-    \begin{itemize}
-    \item stand-alone CPU, stand-alone GPU, and hybrid CPU+GPU implementations
-    \item publicly available at
-      \url{https://github.com/SGo-Go/BSOFI}
-    \end{itemize}
-  \end{itemize}
+        Choose initial guess for $Q_x$ ($k$-dimensional vector) \;
+
+        \While{$\max(\text{error}{(Q_x)}) > \epsilon$ }{
+          $V_x \gets \sum_{x \to y} a_{xy} Q_y$ \;
+          % \fbox{
+          $K^{(x)} \gets V_x^T V_x$ \;
+          $K \gets \texttt{PushSum}(K^{(x)})$ \;
+          {Cholesky fact.% factorization
+            :} $R^T R = K$ \;
+          $Q_x \gets V_x R^{-1}$
+          % }
+        }
+      \end{algorithm}
+    \end{block}
+  \end{columns}
+\end{frame}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Decentralized OI}{Convergence}
+  \begin{columns}
+    \column[T]{.5\textwidth}
+    $B$ stochastic matrix with ergodic and reversible Markov Chain:
+    \begin{equation*}
+      \structure{b_{xy}=\begin{cases}1/\deg(x), & x \to y\\ 0, &x \not\to y \end{cases}}
+    \end{equation*}
+
+    \column[T]{.5\textwidth}
+    \begin{block}{\PushSum  (on node $x$)}
+      \begin{algorithm}[H]
+        \KwData{$K^{(x)}$, $B$}
+        \KwResult{$K = S_x/w_x$}
+        \BlankLine
+
+        $w_x=\begin{cases}1, & x = \hat{x} \\ 0, & x \neq \hat{x} \end{cases}$ \;
+        $S_x \gets K^{(x)}$ \;
+
+        \While{large error}{
+          $S_x \gets \sum_{y \to x} b_{yx} S_y$ \;
+          $w_x \gets \sum_{y \to x} b_{yx} w_y$ \;
+        }
+      \end{algorithm}
+    \end{block}
+  \end{columns}
 \end{frame}
 
-%% \frame[plain]{\centering
-%%   \Huge Thank you for your attantion!
-%%   \includegraphics[height=0.5\textheight]{figs/extras/question.jpg}
-%% }
+\begin{frame}{Decentralized OI}{\PushSum protocol}
+  \begin{block}{Convergence of decentralized OI}
+    It converges essentially in
+    \structure{${\cal O}(\tau_{\text{mix}} \log^2 n)$}
+    rounds of communication and computation, 
+    where $\tau_{\text{mix}}$ is the mixing  time  of  a  random  walk  on  the  network. 
+  \end{block}
+\end{frame}
+
+
+% \begin{frame}{Experimental results}{Experimental setup}
+%   \renewcommand*\DTstyle{\sffamily\small}
+%   \renewcommand*\DTstylecomment{\footnotesize\textsl}
+%   \DTsetlength{0.2em}{1em}{0.2em}{0.4pt}{0.4pt}
+%   \begin{itemize}
+%   \item \structure{Hardware}
+%     \begin{columns}
+%       \begin{column}{.5\textwidth}
+%         \dirtree{%
+%           .1 \structure{Single-GPU}\DTcomment{Hybrid node at UCD}.
+%           .2 2 $\times$ Intel Xeon X5670.
+%           .3 6-cores, 2.9GHz.
+%           .2 1 $\times$ %% CUDA-enabled
+%           NVIDIA GTX480. %, Fermi
+%           .3 15 SMs $\times$ 32 cores.
+%         }
+%       \end{column}
+%       \begin{column}{.5\textwidth}
+%         \dirtree{%
+%           .1 \structure{Multi-GPU}\DTcomment{Dirac cluster at NERSC}.
+%           .2 2 $\times$ Intel Xeon E5530. %Nehalem
+%           .3 4-cores, 2.4 GHz.
+%           .2 4 $\times$ NVIDIA Tesla C1060.
+%           .3 240 cores. %1.296 GHz
+%         }
+%       \end{column}
+%     \end{columns}
+% \end{frame}
+
+\frame[plain]{\centering
+  \Huge Thank you for your attantion!
+  % \includegraphics[height=0.5\textheight]{figs/extras/question.jpg}
+}
 \end{document}

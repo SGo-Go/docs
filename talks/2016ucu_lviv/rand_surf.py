@@ -22,8 +22,8 @@ edges1 = [('B', 'A'), ('C', 'B'), ('D', 'C'), ('D', 'A'), ('A', 'E'), ('E', 'D')
 edges11 = [('C', 'B'), ('D', 'C'), ('D', 'A'), ('A', 'E'), ('E', 'D')]
 edges2 = [('E', 'B'), ('E', 'C')]
 
-def getGraph(edges1, edges2):
-    G = nx.DiGraph()
+def getGraph(edges1, edges2, graph_class=nx.DiGraph):
+    G = graph_class()
     G.add_edges_from(edges1, weight = 1)
     G.add_edges_from(edges2, weight = 2)
     pos={'A':(0,0),
@@ -138,5 +138,19 @@ print map(lambda x: round(100*x)/100., pr)
 node_size=map(lambda x : int(5000*x), pr)
 print node_size
 drawGraph(edges11, edges2, filename = "graph_dead_end_pagerank.pdf", node_size=node_size)
+
+GS,pos = getGraph(edges1, edges2, nx.Graph)
+# GS = nx.Graph()
+# GS.add_edges_from(edges1, weight = 1)
+# GS.add_edges_from(edges2, weight = 2)
+# pos={'A':(0,0),
+#      'B':(1,0),
+#      'C':(1,1),
+#      'D':(0,1),
+#      'E':(0.5,0.5)}
+A = nx.adjacency_matrix(GS, nodelist=list('ABCDE'))
+#laplacian_matrix()
+A = Matrix(A.astype(int))
+pprint(A)
 
 #plt.show()
